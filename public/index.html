@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Begins</title>
+</head>
+<body>
+    <h1>Мой сайт 🚀</h1>
+    <button onclick="test()">Проверить сервер</button>
+
+    <script>
+        function test() {
+            fetch("/")
+            .then(res => res.text())
+            .then(data => alert(data));
+        }
+    </script>
+</body>
+</html>
