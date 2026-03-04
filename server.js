@@ -1,24 +1,41 @@
-const express = require("express");
-const { Pool } = require("pg");
+import express from "express";
+import pkg from "pg";
+
+const { Pool } = pkg;
 
 const app = express();
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
+
+app.use(express.json());
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
+  ssl: {
+    rejectUnauthorized: false,
+  },
 });
 
-app.get("/", async (req, res) => {
+async function initDB() {
   try {
-    const result = await pool.query("SELECT NOW()");
-    res.send("Сервер работает 🚀 Время БД: " + result.rows[0].now);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL
+      );
+    `);
+    console.log("Database ready ✅");
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Ошибка сервера");
+    console.error("Database error ❌", err);
   }
+}
+
+initDB();
+
+app.get("/", (req, res) => {
+  res.send("Admin Backend работает 🚀");
 });
 
-app.listen(port, () => {
-  console.log("Server started on port " + port);
+app.listen(PORT, () => {
+  console.log("Server started 🚀");
 });
