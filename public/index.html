@@ -1,87 +1,176 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Admin PRO</title>
-  <style>
-    body { font-family: Arial; background:#111; color:white; text-align:center; padding:50px; }
-    input { padding:10px; margin:5px; width:200px; }
-    button { padding:10px 20px; cursor:pointer; }
-    #panel { display:none; margin-top:30px; }
-  </style>
+<meta charset="UTF-8">
+<title>Admin Panel PRO</title>
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#0f172a;
+  color:white;
+}
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:40px;
+}
+.card{
+  background:#1e293b;
+  padding:25px;
+  border-radius:12px;
+  margin-bottom:20px;
+  box-shadow:0 5px 20px rgba(0,0,0,0.3);
+}
+input{
+  width:100%;
+  padding:10px;
+  margin:6px 0;
+  border:none;
+  border-radius:6px;
+}
+button{
+  padding:10px 15px;
+  background:#22c55e;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  font-weight:bold;
+}
+button:hover{background:#16a34a;}
+.admin-btn{background:#ef4444;}
+.admin-btn:hover{background:#dc2626;}
+.hidden{display:none;}
+table{
+  width:100%;
+  margin-top:15px;
+  border-collapse:collapse;
+}
+td,th{
+  padding:8px;
+  border-bottom:1px solid #334155;
+  text-align:left;
+}
+h1{color:#22c55e;}
+</style>
 </head>
 <body>
 
-<h1>Admin PRO 🚀</h1>
+<div class="container">
 
-<div id="auth">
-  <h2>Регистрация</h2>
-  <input id="regName" placeholder="Name"><br>
-  <input id="regEmail" placeholder="Email"><br>
-  <input id="regPass" type="password" placeholder="Password"><br>
-  <button onclick="register()">Register</button>
+<h1>Admin Panel PRO 🚀</h1>
 
-  <h2>Вход</h2>
-  <input id="logEmail" placeholder="Email"><br>
-  <input id="logPass" type="password" placeholder="Password"><br>
-  <button onclick="login()">Login</button>
+<div id="auth" class="card">
+<h3>Login</h3>
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<p>Default admin:<br>admin@admin.com / admin123</p>
 </div>
 
-<div id="panel">
-  <h2>Панель 🔥</h2>
-  <p id="info"></p>
-  <button onclick="logout()">Logout</button>
+<div id="panel" class="hidden">
+
+<div class="card">
+<h3>Dashboard</h3>
+<p id="userinfo"></p>
+<button onclick="logout()">Logout</button>
+</div>
+
+<div id="adminSection" class="card hidden">
+<h3>All Users</h3>
+<table id="usersTable">
+<thead>
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Email</th>
+<th>Role</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+
+</div>
+
 </div>
 
 <script>
-const API = "";
-
-function register() {
-  fetch("/register", {
+function login(){
+  fetch("/login",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({
-      name:regName.value,
-      email:regEmail.value,
-      password:regPass.value
-    })
-  })
-  .then(r=>r.json())
-  .then(d=>alert(JSON.stringify(d)));
-}
-
-function login() {
-  fetch("/login", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      email:logEmail.value,
-      password:logPass.value
+      email:email.value,
+      password:password.value
     })
   })
   .then(r=>r.json())
   .then(d=>{
     if(d.token){
-      localStorage.setItem("token", d.token);
+      localStorage.setItem("token",d.token);
       loadPanel();
-    } else {
+    }else{
       alert(JSON.stringify(d));
     }
   });
 }
 
 function loadPanel(){
-  const token = localStorage.getItem("token");
-  if(!token) return;
+  const token=localStorage.getItem("token");
+  if(!token)return;
 
-  fetch("/dashboard", {
+  fetch("/dashboard",{
     headers:{Authorization:"Bearer "+token}
   })
   .then(r=>r.json())
   .then(d=>{
-    auth.style.display="none";
-    panel.style.display="block";
-    info.innerText = JSON.stringify(d,null,2);
+    auth.classList.add("hidden");
+    panel.classList.remove("hidden");
+    userinfo.innerText="Role: "+d.user.role+" | ID: "+d.user.id;
+
+    if(d.user.role==="admin"){
+      adminSection.classList.remove("hidden");
+      loadUsers();
+    }
   });
+}
+
+function loadUsers(){
+  const token=localStorage.getItem("token");
+  fetch("/admin/users",{
+    headers:{Authorization:"Bearer "+token}
+  })
+  .then(r=>r.json())
+  .then(users=>{
+    const tbody=document.querySelector("#usersTable tbody");
+    tbody.innerHTML="";
+    users.forEach(u=>{
+      tbody.innerHTML+=`
+      <tr>
+        <td>${u.id}</td>
+        <td>${u.name}</td>
+        <td>${u.email}</td>
+        <td>${u.role}</td>
+        <td>
+          <button class="admin-btn" onclick="deleteUser(${u.id})">
+            Delete
+          </button>
+        </td>
+      </tr>`;
+    });
+  });
+}
+
+function deleteUser(id){
+  const token=localStorage.getItem("token");
+  fetch("/admin/users/"+id,{
+    method:"DELETE",
+    headers:{Authorization:"Bearer "+token}
+  })
+  .then(r=>r.json())
+  .then(()=>loadUsers());
 }
 
 function logout(){
