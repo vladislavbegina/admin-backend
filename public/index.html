@@ -1,18 +1,96 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Admin Begins</title>
+  <title>Admin PRO</title>
+  <style>
+    body { font-family: Arial; background:#111; color:white; text-align:center; padding:50px; }
+    input { padding:10px; margin:5px; width:200px; }
+    button { padding:10px 20px; cursor:pointer; }
+    #panel { display:none; margin-top:30px; }
+  </style>
 </head>
 <body>
-    <h1>Мой сайт 🚀</h1>
-    <button onclick="test()">Проверить сервер</button>
 
-    <script>
-        function test() {
-            fetch("/")
-            .then(res => res.text())
-            .then(data => alert(data));
-        }
-    </script>
+<h1>Admin PRO 🚀</h1>
+
+<div id="auth">
+  <h2>Регистрация</h2>
+  <input id="regName" placeholder="Name"><br>
+  <input id="regEmail" placeholder="Email"><br>
+  <input id="regPass" type="password" placeholder="Password"><br>
+  <button onclick="register()">Register</button>
+
+  <h2>Вход</h2>
+  <input id="logEmail" placeholder="Email"><br>
+  <input id="logPass" type="password" placeholder="Password"><br>
+  <button onclick="login()">Login</button>
+</div>
+
+<div id="panel">
+  <h2>Панель 🔥</h2>
+  <p id="info"></p>
+  <button onclick="logout()">Logout</button>
+</div>
+
+<script>
+const API = "";
+
+function register() {
+  fetch("/register", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      name:regName.value,
+      email:regEmail.value,
+      password:regPass.value
+    })
+  })
+  .then(r=>r.json())
+  .then(d=>alert(JSON.stringify(d)));
+}
+
+function login() {
+  fetch("/login", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      email:logEmail.value,
+      password:logPass.value
+    })
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    if(d.token){
+      localStorage.setItem("token", d.token);
+      loadPanel();
+    } else {
+      alert(JSON.stringify(d));
+    }
+  });
+}
+
+function loadPanel(){
+  const token = localStorage.getItem("token");
+  if(!token) return;
+
+  fetch("/dashboard", {
+    headers:{Authorization:"Bearer "+token}
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    auth.style.display="none";
+    panel.style.display="block";
+    info.innerText = JSON.stringify(d,null,2);
+  });
+}
+
+function logout(){
+  localStorage.removeItem("token");
+  location.reload();
+}
+
+loadPanel();
+</script>
+
 </body>
 </html>
