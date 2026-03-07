@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="UTF-8">
+<title>Admi Begins Cameras</title>
+
+<style>
+
+body{
+background:#0dbb55;
+font-family:Arial;
+text-align:center;
+}
+
+video{
+width:500px;
+border-radius:10px;
+background:black;
+margin:20px;
+}
+
+button{
+
+background:#0dbb55;
+color:white;
+padding:10px;
+border:none;
+border-radius:5px;
+font-size:16px;
+margin:10px;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>Admi Begins Online Camera</h2>
+
+<video id="camera" autoplay></video>
+
+<br>
+
+<button onclick="startCamera()">Включить камеру</button>
+
+<button onclick="startRecord()">Начать запись</button>
+
+<button onclick="stopRecord()">Остановить запись</button>
+
+<script>
+
+let stream
+let recorder
+let chunks=[]
+
+const video=document.getElementById("camera")
+
+async function startCamera(){
+
+stream=await navigator.mediaDevices.getUserMedia({
+video:true,
+audio:true
+})
+
+video.srcObject=stream
+
+}
+
+function startRecord(){
+
+chunks=[]
+
+recorder=new MediaRecorder(stream)
+
+recorder.ondataavailable=e=>{
+chunks.push(e.data)
+}
+
+recorder.onstop=e=>{
+
+const blob=new Blob(chunks,{type:"video/webm"})
+
+const url=URL.createObjectURL(blob)
+
+const a=document.createElement("a")
+
+a.href=url
+a.download="record.webm"
+
+a.click()
+
+}
+
+recorder.start()
+
+}
+
+function stopRecord(){
+
+recorder.stop()
+
+}
+
+</script>
+
+</body>
+</html>

@@ -1,185 +1,145 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Admin Panel PRO</title>
+<title>ndmibegins</title>
+
 <style>
+
 body{
-  margin:0;
-  font-family:Arial;
-  background:#0f172a;
-  color:white;
+font-family:Arial;
+background:#f4f6f9;
+margin:0;
 }
+
+header{
+background:#1f2937;
+color:white;
+padding:20px;
+text-align:center;
+font-size:28px;
+}
+
+.menu{
+display:flex;
+justify-content:center;
+gap:30px;
+background:#111827;
+padding:15px;
+}
+
+.menu a{
+color:white;
+text-decoration:none;
+font-size:18px;
+}
+
 .container{
-  max-width:900px;
-  margin:auto;
-  padding:40px;
+max-width:1200px;
+margin:auto;
+padding:40px;
 }
+
 .card{
-  background:#1e293b;
-  padding:25px;
-  border-radius:12px;
-  margin-bottom:20px;
-  box-shadow:0 5px 20px rgba(0,0,0,0.3);
+background:white;
+padding:25px;
+margin-bottom:25px;
+border-radius:10px;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
 }
-input{
-  width:100%;
-  padding:10px;
-  margin:6px 0;
-  border:none;
-  border-radius:6px;
+
+.card h2{
+margin-top:0;
 }
+
+.price{
+color:green;
+font-size:20px;
+font-weight:bold;
+}
+
 button{
-  padding:10px 15px;
-  background:#22c55e;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-  font-weight:bold;
+background:#22c55e;
+border:none;
+padding:10px 20px;
+color:white;
+border-radius:6px;
+cursor:pointer;
 }
-button:hover{background:#16a34a;}
-.admin-btn{background:#ef4444;}
-.admin-btn:hover{background:#dc2626;}
-.hidden{display:none;}
-table{
-  width:100%;
-  margin-top:15px;
-  border-collapse:collapse;
+
+button:hover{
+background:#16a34a;
 }
-td,th{
-  padding:8px;
-  border-bottom:1px solid #334155;
-  text-align:left;
-}
-h1{color:#22c55e;}
+
 </style>
 </head>
+
 <body>
+
+<header>
+ndmibegins
+</header>
+
+<div class="menu">
+<a href="#">Видео уроки</a>
+<a href="#">Онлайн камеры</a>
+<a href="#">Чат</a>
+<a href="#">Видео чат</a>
+<a href="#">Родительский контроль</a>
+<a href="#">Реклама</a>
+</div>
 
 <div class="container">
 
-<h1>Admin Panel PRO 🚀</h1>
-
-<div id="auth" class="card">
-<h3>Login</h3>
-<input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
-<button onclick="login()">Login</button>
-<p>Default admin:<br>admin@admin.com / admin123</p>
+<div class="card">
+<h2>🎥 Видео уроки</h2>
+<p>Обучающие видео уроки</p>
+<p class="price">200 грн за 1 видео</p>
+<button>Смотреть</button>
 </div>
-
-<div id="panel" class="hidden">
 
 <div class="card">
-<h3>Dashboard</h3>
-<p id="userinfo"></p>
-<button onclick="logout()">Logout</button>
+<h2>📷 Онлайн камеры</h2>
+<p>Просмотр камер и запись трансляции</p>
+<p class="price">14 дней бесплатно</p>
+<p class="price">20 грн / месяц</p>
+<p class="price">30 грн сохранение трансляции</p>
+<button>Открыть</button>
 </div>
 
-<div id="adminSection" class="card hidden">
-<h3>All Users</h3>
-<table id="usersTable">
-<thead>
-<tr>
-<th>ID</th>
-<th>Name</th>
-<th>Email</th>
-<th>Role</th>
-<th>Action</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
+<div class="card">
+<h2>💬 Чат общения</h2>
+<p>Общение между пользователями</p>
+<p class="price">1 месяц бесплатно</p>
+<p class="price">10 грн / месяц</p>
+<button>Открыть чат</button>
+</div>
+
+<div class="card">
+<h2>📞 Видео чат</h2>
+<p>Видеозвонки между пользователями</p>
+<p class="price">1 месяц бесплатно</p>
+<p class="price">10 грн / месяц</p>
+<button>Начать звонок</button>
+</div>
+
+<div class="card">
+<h2>📍 Родительский контроль</h2>
+<p>GPS где был ребенок</p>
+<p class="price">14 дней бесплатно</p>
+<p class="price">10 грн / месяц</p>
+<button>Открыть карту</button>
+</div>
+
+<div class="card">
+<h2>📢 Размещение рекламы</h2>
+<p>Размещение рекламы на сайте</p>
+<p>Все кроме порно</p>
+<p class="price">20 грн / месяц за рекламу</p>
+<button>Разместить рекламу</button>
 </div>
 
 </div>
-
-</div>
-
-<script>
-function login(){
-  fetch("/login",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      email:email.value,
-      password:password.value
-    })
-  })
-  .then(r=>r.json())
-  .then(d=>{
-    if(d.token){
-      localStorage.setItem("token",d.token);
-      loadPanel();
-    }else{
-      alert(JSON.stringify(d));
-    }
-  });
-}
-
-function loadPanel(){
-  const token=localStorage.getItem("token");
-  if(!token)return;
-
-  fetch("/dashboard",{
-    headers:{Authorization:"Bearer "+token}
-  })
-  .then(r=>r.json())
-  .then(d=>{
-    auth.classList.add("hidden");
-    panel.classList.remove("hidden");
-    userinfo.innerText="Role: "+d.user.role+" | ID: "+d.user.id;
-
-    if(d.user.role==="admin"){
-      adminSection.classList.remove("hidden");
-      loadUsers();
-    }
-  });
-}
-
-function loadUsers(){
-  const token=localStorage.getItem("token");
-  fetch("/admin/users",{
-    headers:{Authorization:"Bearer "+token}
-  })
-  .then(r=>r.json())
-  .then(users=>{
-    const tbody=document.querySelector("#usersTable tbody");
-    tbody.innerHTML="";
-    users.forEach(u=>{
-      tbody.innerHTML+=`
-      <tr>
-        <td>${u.id}</td>
-        <td>${u.name}</td>
-        <td>${u.email}</td>
-        <td>${u.role}</td>
-        <td>
-          <button class="admin-btn" onclick="deleteUser(${u.id})">
-            Delete
-          </button>
-        </td>
-      </tr>`;
-    });
-  });
-}
-
-function deleteUser(id){
-  const token=localStorage.getItem("token");
-  fetch("/admin/users/"+id,{
-    method:"DELETE",
-    headers:{Authorization:"Bearer "+token}
-  })
-  .then(r=>r.json())
-  .then(()=>loadUsers());
-}
-
-function logout(){
-  localStorage.removeItem("token");
-  location.reload();
-}
-
-loadPanel();
-</script>
 
 </body>
 </html>

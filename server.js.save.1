@@ -1,0 +1,228 @@
+const { Pool } = require('pg')
+
+const pool = new Pool({
+  user: 'ndmiadmin',
+  host: 'localhost',
+  database: 'ndmibegins',
+  password: 'vlad0974504988',
+  port: 5432,
+})import express from "express"
+import multer from "multer"
+import fs from "fs"
+import path from "path"
+import sqlite3 from "sqlite3"
+import { fileURLToPath } from "url"
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+const app = express()
+
+app.use(express.json())
+app.use(express.static("public"))
+
+/* АДМИН */
+
+const ADMIN_LOGIN = "vladislavbegina@gmail.com"
+const ADMIN_PASSWORD = "vlad0974504988"
+
+/* БАЗА */
+
+const db = new sqlite3.Database("./database.db")
+
+db.run(`
+CREATE TABLE IF NOT EXISTS videos(
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+title TEXT,
+filename TEXT
+)
+`)
+
+/* ПАПКА ВИДЕО */
+
+const videoFolder = path.join(__dirname,"videos")
+
+if(!fs.existsSync(videoFolder)){
+fs.mkdirSync(videoFolder)
+}
+
+/* ЗАГРУЗКА */
+
+const storage = multer.diskStorage({
+
+destination:(req,file,cb)=>{
+cb(null,"videos")
+},
+
+filename:(req,file,cb)=>{
+cb(null,Date.now()+"-"+file.originalname)
+}
+
+})
+
+const upload = multer({
+
+storage,
+
+limits:{
+fileSize: 2000 * 1024 * 1024
+},
+
+fileFilter:(req,file,cb)=>{
+
+if(file.mimetype.startsWith("video/")){
+cb(null,true)
+}else{
+cb(new Error("Only video allowed"))
+}
+
+}
+
+})
+
+/* ЛОГИН */
+
+app.post("/api/login",(req,res)=>{
+
+const {login,password} = req.body
+
+if(login === ADMIN_LOGIN && password === ADMIN_PASSWORD){
+res.json({status:"ok"})
+}else{
+res.status(401).json({error:"wrong"})
+}
+
+})
+
+/* ЗАГРУЗКА ВИДЕО */
+
+app.post("/api/upload",upload.single("video"),(req,res)=>{
+
+const title = req.body.title
+const filename = req.file.filename
+
+db.run(
+"INSERT INTO videos(title,filename) VALUES(?,?)",
+[title,filename]
+)
+
+res.json({status:"ok"})
+
+})
+
+/* СПИСОК ВИДЕО */
+
+app.get("/api/videos",(req,res)=>{
+
+db.all("SELECT * FROM videos",(err,rows)=>{
+res.json(rows)
+})
+
+})
+
+/* УДАЛЕНИЕ ВИДЕО */
+
+app.delete("/api/video/:id",(req,res)=>{
+
+db.get(
+"SELECT * FROM videos WHERE id=?",
+[req.params.id],
+(err,video)=>{
+
+if(!video){
+return res.status(404).send("not found")
+}
+
+const videoPath = path.join(videoFolder,video.filename)
+
+if(fs.existsSync(videoPath)){
+fs.unlinkSync(videoPath)
+}
+
+db.run("DELETE FROM videos WHERE id=?",[req.params.id])
+
+res.json({status:"deleted"})
+
+})
+
+})
+
+/* СТРИМИНГ ВИДЕО */
+
+app.get("/api/stream/:id",(req,res)=>{
+
+const referer = req.headers.referer || ""
+
+if(!referer.includes("localhost")){
+return res.status(403).send("Access denied")
+}
+
+db.get(
+"SELECT * FROM videos WHERE id=?",
+[req.params.id],
+(err,video)=>{
+
+if(!video){
+return res.status(404).send("video not found")
+}
+
+const videoPath = path.join(videoFolder,video.filename)
+
+if(!fs.existsSync(videoPath)){
+return res.status(404).send("file not found")
+}
+
+const stat = fs.statSync(videoPath)
+const fileSize = stat.size
+const range = req.headers.range
+
+if(range){
+
+const parts = range.replace(/bytes=/,"").split("-")
+const start = parseInt(parts[0],10)
+const end = parts[1] ? parseInt(parts[1],10) : fileSize-1
+
+const chunkSize = (end-start)+1
+
+const file = fs.createReadStream(videoPath,{start,end})
+
+res.writeHead(206,{
+"Content-Range":`bytes ${start}-${end}/${fileSize}`,
+"Accept-Ranges":"bytes",
+"Content-Length":chunkSize,
+"Content-Type":"video/mp4"
+})
+
+file.pipe(res)
+
+}else{
+
+res.writeHead(200,{
+"Content-Length":fileSize,
+"Content-Type":"video/mp4"
+})
+
+fs.createReadStream(videoPath).pipe(res)
+
+}
+
+})
+
+})
+
+/* СЕРВЕР */
+
+const PORT = 3000
+
+app.listen(PORT,()=>{
+console.log("SERVER WORKING http://localhost:3000")
+})
+const { Pool } = require('pg')
+
+const pool = new Pool({
+  user: 'ndmiadmin',
+  host: 'localhost',
+  database: 'ndmibegins',
+  password: '12345678',
+  port: 5432,
+})
